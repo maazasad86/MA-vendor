@@ -6,10 +6,17 @@ const assembleSchema = new mongoose.Schema({
     enum: ['Front', 'Rear', 'Brake Show'],
     required: true,
   },
+  assemblyName: {
+    type: String,
+    required: false,
+  },
   bike: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Bike',
     required: true,
+  },
+  bikeCategory: {
+    type: String,
   },
   items: [
     {

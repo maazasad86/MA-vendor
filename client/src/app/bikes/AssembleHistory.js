@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Row, Col, Badge, Card, Alert, Button } from 'react-bootstrap';
+import { Form, Badge, Button, Modal, Alert } from 'react-bootstrap';
 
 const AssembleHistory = () => {
     const [assemblies, setAssemblies] = useState([]);
@@ -7,12 +7,22 @@ const AssembleHistory = () => {
     const [bikeFilter, setBikeFilter] = useState('');
     const [typeFilter, setTypeFilter] = useState('');
     const [message, setMessage] = useState({ type: '', text: '' });
+    
+    // Edit Modal State
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editingAssembly, setEditingAssembly] = useState(null);
+    const [editName, setEditName] = useState('');
+    const [editQuantity, setEditQuantity] = useState(0);
 
     const fetchAssemblies = async () => {
         try {
             const res = await fetch('/api/assembles');
             const data = await res.json();
-            setAssemblies(data);
+            if (Array.isArray(data)) {
+                setAssemblies(data);
+            } else {
+                setAssemblies([]);
+            }
         } catch (err) {
             console.error('Error fetching assemblies:', err);
         }
@@ -22,7 +32,11 @@ const AssembleHistory = () => {
         try {
             const res = await fetch('/api/bikes');
             const data = await res.json();
-            setBikes(data);
+            if (Array.isArray(data)) {
+                setBikes(data);
+            } else {
+                setBikes([]);
+            }
         } catch (err) {
             console.error('Error fetching bikes:', err);
         }
@@ -33,8 +47,60 @@ const AssembleHistory = () => {
         fetchBikes();
     }, []);
 
+    const handleDelete = async (id) => {
+        if (window.confirm('Are you sure you want to delete this assembly? Materials will be returned to stock.')) {
+            try {
+                const res = await fetch(`/api/assembles/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    setMessage({ type: 'success', text: 'Record deleted and stock restored!' });
+                    fetchAssemblies();
+                    setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+                } else {
+                    const data = await res.json();
+                    setMessage({ type: 'danger', text: 'Delete failed: ' + (data.error || 'Server error') });
+                }
+            } catch (err) {
+                console.error('Error deleting:', err);
+                setMessage({ type: 'danger', text: 'Network error while deleting.' });
+            }
+        }
+    };
+
+    const openEditModal = (a) => {
+        setEditingAssembly(a);
+        setEditName(a.assemblyName || '');
+        setEditQuantity(a.totalQuantity);
+        setShowEditModal(true);
+    };
+
+    const handleUpdate = async () => {
+        try {
+            const res = await fetch(`/api/assembles/${editingAssembly._id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    assemblyName: editName,
+                    totalQuantity: editQuantity
+                })
+            });
+            if (res.ok) {
+                setMessage({ type: 'success', text: 'Assembly updated successfully!' });
+                setShowEditModal(false);
+                fetchAssemblies();
+                setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+            }
+        } catch (err) {
+            console.error('Error updating:', err);
+        }
+    };
+
     const filteredAssemblies = assemblies.filter(a => {
-        const matchesBike = bikeFilter ? (a.bike && a.bike._id === bikeFilter) : true;
+        // Match if direct bike match OR if selected bike's category matches the assembly category
+        const selectedBikeObj = bikes.find(b => b._id === bikeFilter);
+        const matchesBike = bikeFilter ? (
+            (a.bike && a.bike._id === bikeFilter) || 
+            (a.bikeCategory && selectedBikeObj && a.bikeCategory === selectedBikeObj.category)
+        ) : true;
         const matchesType = typeFilter ? a.assemblyType === typeFilter : true;
         return matchesBike && matchesType;
     });
@@ -73,6 +139,12 @@ const AssembleHistory = () => {
                 </div>
             </div>
 
+            {message.text && (
+                <Alert variant={message.type} className="mb-4" dismissible onClose={() => setMessage({type:'', text:''})}>
+                    {message.text}
+                </Alert>
+            )}
+
             <div className="row">
                 <div className="col-lg-12 grid-margin stretch-card">
                     <div className="card">
@@ -90,6 +162,7 @@ const AssembleHistory = () => {
                                             <th className="text-center"> Quantity </th>
                                             <th> Parts Used </th>
                                             <th className="text-center"> Status </th>
+                                            <th className="text-center"> Actions </th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -99,7 +172,11 @@ const AssembleHistory = () => {
                                                     {new Date(a.createdAt).toLocaleDateString()} <br/>
                                                     <small className="text-muted">{new Date(a.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</small>
                                                 </td>
-                                                <td className="font-weight-bold"> {(a.bike && a.bike.name) || 'N/A'} </td>
+                                                <td className="font-weight-bold"> 
+                                                    {a.bikeCategory && <Badge variant="outline-dark" className="mr-1 border mb-1">Cat: {a.bikeCategory}</Badge>} <br/>
+                                                    {(a.bike && a.bike.name) || 'N/A'} <br/>
+                                                    {a.assemblyName && <small className="text-primary font-weight-normal">{a.assemblyName}</small>}
+                                                </td>
                                                 <td>
                                                     <Badge variant={
                                                         a.assemblyType === 'Front' ? 'primary' : 
@@ -125,11 +202,31 @@ const AssembleHistory = () => {
                                                 <td className="text-center">
                                                     <Badge pill variant="success" className="px-3">Ready to Sale</Badge>
                                                 </td>
+                                                <td className="text-center">
+                                                    <div className="d-flex justify-content-center">
+                                                        <Button 
+                                                            variant="outline-primary" 
+                                                            size="sm" 
+                                                            className="mr-2 px-2 py-1"
+                                                            onClick={() => openEditModal(a)}
+                                                        >
+                                                            <i className="mdi mdi-pencil"></i>
+                                                        </Button>
+                                                        <Button 
+                                                            variant="outline-danger" 
+                                                            size="sm" 
+                                                            className="px-2 py-1"
+                                                            onClick={() => handleDelete(a._id)}
+                                                        >
+                                                            <i className="mdi mdi-trash-can"></i>
+                                                        </Button>
+                                                    </div>
+                                                </td>
                                             </tr>
                                         ))}
                                         {filteredAssemblies.length === 0 && (
                                             <tr>
-                                                <td colSpan="6" className="text-center py-5">
+                                                <td colSpan="7" className="text-center py-5">
                                                     <i className="mdi mdi-history h2 text-muted"></i>
                                                     <p className="mt-2 text-muted">No assembly records found.</p>
                                                 </td>
@@ -142,6 +239,44 @@ const AssembleHistory = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Edit Modal */}
+            <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered>
+                <Modal.Header closeButton className="bg-primary text-white">
+                    <Modal.Title>Edit Assembly Record</Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="p-4">
+                    <Form>
+                        <Form.Group className="mb-3">
+                            <label className="font-weight-bold">Assembly Name (Reference)</label>
+                            <Form.Control 
+                                type="text"
+                                value={editName}
+                                onChange={(e) => setEditName(e.target.value)}
+                                placeholder="Edit batch name..."
+                            />
+                        </Form.Group>
+                        <Form.Group className="mb-0">
+                            <label className="font-weight-bold">Total Units Produced</label>
+                            <Form.Control 
+                                type="number"
+                                value={editQuantity}
+                                onChange={(e) => setEditQuantity(parseInt(e.target.value))}
+                                min="1"
+                            />
+                            <small className="text-info">Changing quantity will automatically adjust material stock.</small>
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="light" onClick={() => setShowEditModal(false)}>
+                        Cancel
+                    </Button>
+                    <Button variant="primary" onClick={handleUpdate}>
+                        Save Changes
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 };

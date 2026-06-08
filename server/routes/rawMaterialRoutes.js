@@ -52,6 +52,7 @@ router.get('/', async (req, res) => {
     const materials = await RawMaterial.find().populate('bike').sort({ createdAt: -1 });
     res.json(materials);
   } catch (err) {
+    console.error('Error in raw material route:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -73,6 +74,7 @@ router.put('/:id', upload.single('image'), async (req, res) => {
     const updatedMaterial = await RawMaterial.findByIdAndUpdate(req.params.id, updateData, { new: true });
     res.json(updatedMaterial);
   } catch (err) {
+    console.error('Error in raw material route:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -83,6 +85,7 @@ router.delete('/:id', async (req, res) => {
     await RawMaterial.findByIdAndDelete(req.params.id);
     res.json({ message: 'Material deleted successfully' });
   } catch (err) {
+    console.error('Error in raw material route:', err);
     res.status(500).json({ error: err.message });
   }
 });

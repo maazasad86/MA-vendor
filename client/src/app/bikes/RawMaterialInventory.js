@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Button, Card, Row, Col, Badge, Alert, InputGroup, Modal, ProgressBar } from 'react-bootstrap';
+import { Form, Button, Badge, Alert, InputGroup, Modal, ProgressBar } from 'react-bootstrap';
 
 const RawMaterialInventory = () => {
   const [materials, setMaterials] = useState([]);
@@ -12,13 +12,18 @@ const RawMaterialInventory = () => {
   const [modalMode, setModalMode] = useState('add'); // 'add' or 'edit'
   const [message, setMessage] = useState({ type: '', text: '' });
   const [showModal, setShowModal] = useState(false);
+  const [selectedBikeId, setSelectedBikeId] = useState('');
 
   // Fetch materials
   const fetchMaterials = async () => {
     try {
       const res = await fetch('/api/raw-materials');
       const data = await res.json();
-      setMaterials(data);
+      if (Array.isArray(data)) {
+          setMaterials(data);
+      } else {
+          setMaterials([]);
+      }
     } catch (err) {
       console.error('Error fetching materials:', err);
     }
@@ -29,7 +34,11 @@ const RawMaterialInventory = () => {
     try {
       const res = await fetch('/api/bikes');
       const data = await res.json();
-      setBikes(data);
+      if (Array.isArray(data)) {
+          setBikes(data);
+      } else {
+          setBikes([]);
+      }
     } catch (err) {
       console.error('Error fetching bikes:', err);
     }
@@ -45,6 +54,7 @@ const RawMaterialInventory = () => {
     setSelectedMaterialId('');
     setSelectedQualityIndex('');
     setIncomingQuantity('');
+    setSelectedBikeId('');
     setModalMode('add');
   };
   
@@ -54,15 +64,16 @@ const RawMaterialInventory = () => {
   };
 
   const openQuickAction = (materialId, qualityIndex, mode) => {
+    const material = materials.find(m => m._id === materialId);
+    if (!material) return;
+
+    setSelectedBikeId(material.bike ? (typeof material.bike === 'object' ? material.bike._id : material.bike) : '');
     setSelectedMaterialId(materialId);
     setSelectedQualityIndex(qualityIndex);
     setModalMode(mode);
     
     if (mode === 'edit') {
-      const material = materials.find(m => m._id === materialId);
-      if (material) {
-        setIncomingQuantity(material.qualities[qualityIndex].quantity.toString());
-      }
+      setIncomingQuantity(material.qualities[qualityIndex].quantity.toString());
     } else {
         setIncomingQuantity('');
     }
@@ -266,26 +277,52 @@ const RawMaterialInventory = () => {
         <Form onSubmit={handleStockAction}>
           <Modal.Body className="px-4">
             <Form.Group className="mb-3 mt-2">
-              <label>Raw Material</label>
+              <label>Bike Category</label>
               <Form.Control 
                 as="select" 
                 className="form-control"
-                value={selectedMaterialId} 
+                value={selectedBikeId} 
                 onChange={(e) => {
-                  setSelectedMaterialId(e.target.value);
+                  setSelectedBikeId(e.target.value);
+                  setSelectedMaterialId('');
                   setSelectedQualityIndex('');
                 }}
                 disabled={modalMode === 'edit'}
                 required
               >
-                <option value="">-- Choose Material --</option>
-                {materials.map(m => (
-                    <option key={m._id} value={m._id}>{m.name}</option>
+                <option value="">-- Choose Bike --</option>
+                {bikes.map(b => (
+                    <option key={b._id} value={b._id}>{b.name}</option>
                 ))}
               </Form.Control>
             </Form.Group>
 
-            {selectedMaterial && (
+            {selectedBikeId && (
+              <Form.Group className="mb-3 animate__animated animate__fadeIn">
+                <label>Raw Material</label>
+                <Form.Control 
+                  as="select" 
+                  className="form-control"
+                  value={selectedMaterialId} 
+                  onChange={(e) => {
+                    setSelectedMaterialId(e.target.value);
+                    setSelectedQualityIndex('');
+                  }}
+                  disabled={modalMode === 'edit'}
+                  required
+                >
+                  <option value="">-- Choose Material --</option>
+                  {materials
+                    .filter(m => m.bike && (typeof m.bike === 'object' ? m.bike._id === selectedBikeId : m.bike === selectedBikeId))
+                    .map(m => (
+                      <option key={m._id} value={m._id}>{m.name}</option>
+                    ))
+                  }
+                </Form.Control>
+              </Form.Group>
+            )}
+
+            {selectedMaterialId && selectedMaterial && (
               <Form.Group className="mb-3 animate__animated animate__fadeIn">
                 <label>Grade / Quality</label>
                 <Form.Control 

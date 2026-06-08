@@ -18,6 +18,7 @@ router.post('/add', upload.single('image'), async (req, res) => {
     await newBike.save();
     res.status(201).json(newBike);
   } catch (err) {
+    console.error('Error in bike route:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -28,6 +29,7 @@ router.get('/', async (req, res) => {
     const bikes = await Bike.find().sort({ createdAt: -1 });
     res.json(bikes);
   } catch (err) {
+    console.error('Error in bike route:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -45,6 +47,7 @@ router.put('/:id', upload.single('image'), async (req, res) => {
     const updatedBike = await Bike.findByIdAndUpdate(req.params.id, updateData, { new: true });
     res.json(updatedBike);
   } catch (err) {
+    console.error('Error in bike route:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -55,6 +58,7 @@ router.delete('/:id', async (req, res) => {
     await Bike.findByIdAndDelete(req.params.id);
     res.json({ message: 'Bike deleted successfully' });
   } catch (err) {
+    console.error('Error in bike route:', err);
     res.status(500).json({ error: err.message });
   }
 });

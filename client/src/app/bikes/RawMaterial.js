@@ -18,29 +18,49 @@ const RawMaterial = () => {
 
   const [message, setMessage] = useState({ type: '', text: '' });
 
-  const fetchMaterials = async () => {
+  const fetchMaterials = async (signal) => {
     try {
-      const res = await fetch('/api/raw-materials');
+      const res = await fetch('/api/raw-materials', { signal });
       const data = await res.json();
-      setMaterials(data);
+      if (Array.isArray(data)) {
+          setMaterials(data);
+      } else {
+          setMaterials([]);
+      }
     } catch (err) {
       console.error('Error fetching materials:', err);
     }
   };
 
-  const fetchBikes = async () => {
+  const fetchBikes = async (signal) => {
     try {
-      const res = await fetch('/api/bikes');
+      const res = await fetch('/api/bikes', { signal });
       const data = await res.json();
-      setBikes(data);
+      if (Array.isArray(data)) {
+          setBikes(data);
+      } else {
+          setBikes([]);
+      }
     } catch (err) {
       console.error('Error fetching bikes:', err);
     }
   };
 
   useEffect(() => {
-    fetchMaterials();
-    fetchBikes();
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    const loadData = async () => {
+        try {
+            await fetchMaterials(signal);
+            await fetchBikes(signal);
+        } catch (err) {
+            if (err.name !== 'AbortError') console.error(err);
+        }
+    };
+
+    loadData();
+    return () => controller.abort();
   }, []);
 
   const handleAddQuality = () => {
@@ -114,9 +134,13 @@ const RawMaterial = () => {
           setMessage({ type: 'success', text: 'Deleted successfully!' });
           fetchMaterials();
           setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+        } else {
+          const data = await res.json();
+          setMessage({ type: 'danger', text: 'Delete failed: ' + (data.error || 'Server error') });
         }
       } catch (err) {
         console.error('Error deleting:', err);
+        setMessage({ type: 'danger', text: 'Network error while deleting.' });
       }
     }
   };

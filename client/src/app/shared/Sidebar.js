@@ -33,18 +33,10 @@ class Sidebar extends Component {
     });
 
     const dropdownPaths = [
-      {path:'/apps', state: 'appsMenuOpen'},
-      {path:'/basic-ui', state: 'basicUiMenuOpen'},
-      {path:'/advanced-ui', state: 'advancedUiMenuOpen'},
-      {path:'/form-elements', state: 'formElementsMenuOpen'},
-      {path:'/tables', state: 'tablesMenuOpen'},
-      {path:'/maps', state: 'mapsMenuOpen'},
-      {path:'/icons', state: 'iconsMenuOpen'},
-      {path:'/charts', state: 'chartsMenuOpen'},
-      {path:'/user-pages', state: 'userPagesMenuOpen'},
-      {path:'/error-pages', state: 'errorPagesMenuOpen'},
-      {path:'/general-pages', state: 'generalPagesMenuOpen'},
-      {path:'/ecommerce', state: 'ecommercePagesMenuOpen'},
+      {path:'/bikes/raw', state: 'inventoryMenuOpen'},
+      {path:'/bikes/assemble', state: 'productionMenuOpen'},
+      {path:'/pos', state: 'salesMenuOpen'},
+      {path:'/sales-history', state: 'salesMenuOpen'},
     ];
 
     dropdownPaths.forEach((obj => {
@@ -78,142 +70,84 @@ class Sidebar extends Component {
               <i className="mdi mdi-home menu-icon"></i>
             </Link>
           </li>
+          
+          {/* Sales & Billing Dropdown */}
+          <li className={ this.isPathActive('/pos') || this.isPathActive('/sales-history') ? 'nav-item active' : 'nav-item' }>
+            <div className={ this.state.salesMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => this.toggleMenuState('salesMenuOpen') } data-toggle="collapse">
+              <span className="menu-title"><Trans>Sales & Billing</Trans></span>
+              <i className="menu-arrow"></i>
+              <i className="mdi mdi-cart menu-icon"></i>
+            </div>
+            <Collapse in={ this.state.salesMenuOpen }>
+              <ul className="nav flex-column sub-menu">
+                <li className="nav-item"> 
+                  <Link className={ this.isPathActive('/pos') ? 'nav-link active' : 'nav-link' } to="/pos">
+                    <Trans>POS (Quick Sale)</Trans>
+                  </Link>
+                </li>
+                <li className="nav-item"> 
+                  <Link className={ this.isPathActive('/sales-history') ? 'nav-link active' : 'nav-link' } to="/sales-history">
+                    <Trans>Sales Records</Trans>
+                  </Link>
+                </li>
+              </ul>
+            </Collapse>
+          </li>
+
           <li className={ this.isPathActive('/bikes/category') ? 'nav-item active' : 'nav-item' }>
             <Link className="nav-link" to="/bikes/category">
               <span className="menu-title"><Trans>Bikes Category</Trans></span>
               <i className="mdi mdi-motorbike menu-icon"></i>
             </Link>
           </li>
-          <li className={ this.isPathActive('/bikes/raw-material') ? 'nav-item active' : 'nav-item' }>
-            <Link className="nav-link" to="/bikes/raw-material">
-              <span className="menu-title"><Trans>Raw Materials</Trans></span>
-              <i className="mdi mdi-wrench menu-icon"></i>
-            </Link>
+
+          {/* Inventory Management Dropdown */}
+          <li className={ this.isPathActive('/bikes/raw') ? 'nav-item active' : 'nav-item' }>
+            <div className={ this.state.inventoryMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => this.toggleMenuState('inventoryMenuOpen') } data-toggle="collapse">
+              <span className="menu-title"><Trans>Inventory Management</Trans></span>
+              <i className="menu-arrow"></i>
+              <i className="mdi mdi-package-variant-closed menu-icon"></i>
+            </div>
+            <Collapse in={ this.state.inventoryMenuOpen }>
+              <ul className="nav flex-column sub-menu">
+                <li className="nav-item"> 
+                  <Link className={ this.isPathActive('/bikes/raw-material') ? 'nav-link active' : 'nav-link' } to="/bikes/raw-material">
+                    <Trans>Materials Config</Trans>
+                  </Link>
+                </li>
+                <li className="nav-item"> 
+                  <Link className={ this.isPathActive('/bikes/raw-material-inventory') ? 'nav-link active' : 'nav-link' } to="/bikes/raw-material-inventory">
+                    <Trans>Stock Control</Trans>
+                  </Link>
+                </li>
+              </ul>
+            </Collapse>
           </li>
-          <li className={ this.isPathActive('/bikes/raw-material-inventory') ? 'nav-item active' : 'nav-item' }>
-            <Link className="nav-link" to="/bikes/raw-material-inventory">
-              <span className="menu-title"><Trans>Raw Inventory</Trans></span>
-              <i className="mdi mdi-clipboard-text menu-icon"></i>
-            </Link>
-          </li>
+
+          {/* Production & Assembly Dropdown */}
           <li className={ this.isPathActive('/bikes/assemble') ? 'nav-item active' : 'nav-item' }>
-            <Link className="nav-link" to="/bikes/assemble">
-              <span className="menu-title"><Trans>Assemble</Trans></span>
+            <div className={ this.state.productionMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => this.toggleMenuState('productionMenuOpen') } data-toggle="collapse">
+              <span className="menu-title"><Trans>Production & Sales</Trans></span>
+              <i className="menu-arrow"></i>
               <i className="mdi mdi-settings menu-icon"></i>
-            </Link>
-          </li>
-          <li className={ this.isPathActive('/bikes/assemble-history') ? 'nav-item active' : 'nav-item' }>
-            <Link className="nav-link" to="/bikes/assemble-history">
-              <span className="menu-title"><Trans>Ready to Sale</Trans></span>
-              <i className="mdi mdi-shopping menu-icon"></i>
-            </Link>
-          </li>
-          <li className={ this.isPathActive('/basic-ui') ? 'nav-item active' : 'nav-item' }>
-            <div className={ this.state.basicUiMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => this.toggleMenuState('basicUiMenuOpen') } data-toggle="collapse">
-              <span className="menu-title"><Trans>Basic UI Elements</Trans></span>
-              <i className="menu-arrow"></i>
-              <i className="mdi mdi-crosshairs-gps menu-icon"></i>
             </div>
-            <Collapse in={ this.state.basicUiMenuOpen }>
+            <Collapse in={ this.state.productionMenuOpen }>
               <ul className="nav flex-column sub-menu">
-                <li className="nav-item"> <Link className={ this.isPathActive('/basic-ui/buttons') ? 'nav-link active' : 'nav-link' } to="/basic-ui/buttons"><Trans>Buttons</Trans></Link></li>
-                <li className="nav-item"> <Link className={ this.isPathActive('/basic-ui/dropdowns') ? 'nav-link active' : 'nav-link' } to="/basic-ui/dropdowns"><Trans>Dropdowns</Trans></Link></li>
-                <li className="nav-item"> <Link className={ this.isPathActive('/basic-ui/typography') ? 'nav-link active' : 'nav-link' } to="/basic-ui/typography"><Trans>Typography</Trans></Link></li>
+                <li className="nav-item"> 
+                  <Link 
+                    to="/bikes/assemble" 
+                    className={this.isPathActive('/bikes/assemble') && !this.isPathActive('/bikes/assemble-history') ? 'nav-link active' : 'nav-link'}
+                  >
+                    <Trans>New Assembly</Trans>
+                  </Link>
+                </li>
+                <li className="nav-item"> 
+                  <Link className={ this.isPathActive('/bikes/assemble-history') ? 'nav-link active' : 'nav-link' } to="/bikes/assemble-history">
+                    <Trans>Ready to Sale</Trans>
+                  </Link>
+                </li>
               </ul>
             </Collapse>
-          </li>
-          <li className={ this.isPathActive('/form-elements') ? 'nav-item active' : 'nav-item' }>
-            <div className={ this.state.formElementsMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => this.toggleMenuState('formElementsMenuOpen') } data-toggle="collapse">
-              <span className="menu-title"><Trans>Form Elements</Trans></span>
-              <i className="menu-arrow"></i>
-              <i className="mdi mdi-format-list-bulleted menu-icon"></i>
-            </div>
-            <Collapse in={ this.state.formElementsMenuOpen }>
-              <ul className="nav flex-column sub-menu">
-                <li className="nav-item"> <Link className={ this.isPathActive('/form-elements/basic-elements') ? 'nav-link active' : 'nav-link' } to="/form-elements/basic-elements"><Trans>Basic Elements</Trans></Link></li>
-              </ul>
-            </Collapse>
-          </li>
-          <li className={ this.isPathActive('/tables') ? 'nav-item active' : 'nav-item' }>
-            <div className={ this.state.tablesMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => this.toggleMenuState('tablesMenuOpen') } data-toggle="collapse">
-              <span className="menu-title"><Trans>Tables</Trans></span>
-              <i className="menu-arrow"></i>
-              <i className="mdi mdi-table-large menu-icon"></i>
-            </div>
-            <Collapse in={ this.state.tablesMenuOpen }>
-              <ul className="nav flex-column sub-menu">
-                <li className="nav-item"> <Link className={ this.isPathActive('/tables/basic-table') ? 'nav-link active' : 'nav-link' } to="/tables/basic-table"><Trans>Basic Table</Trans></Link></li>
-              </ul>
-            </Collapse>
-          </li>
-          <li className={ this.isPathActive('/icons') ? 'nav-item active' : 'nav-item' }>
-            <div className={ this.state.iconsMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => this.toggleMenuState('iconsMenuOpen') } data-toggle="collapse">
-              <span className="menu-title"><Trans>Icons</Trans></span>
-              <i className="menu-arrow"></i>
-              <i className="mdi mdi-contacts menu-icon"></i>
-            </div>
-            <Collapse in={ this.state.iconsMenuOpen }>
-              <ul className="nav flex-column sub-menu">
-                <li className="nav-item"> <Link className={ this.isPathActive('/icons/mdi') ? 'nav-link active' : 'nav-link' } to="/icons/mdi"><Trans>Material</Trans></Link></li>
-              </ul>
-            </Collapse>
-          </li>
-          <li className={ this.isPathActive('/charts') ? 'nav-item active' : 'nav-item' }>
-            <div className={ this.state.chartsMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => this.toggleMenuState('chartsMenuOpen') } data-toggle="collapse">
-              <span className="menu-title"><Trans>Charts</Trans></span>
-              <i className="menu-arrow"></i>
-              <i className="mdi mdi-chart-bar menu-icon"></i>
-            </div>
-            <Collapse in={ this.state.chartsMenuOpen }>
-              <ul className="nav flex-column sub-menu">
-                <li className="nav-item"> <Link className={ this.isPathActive('/charts/chart-js') ? 'nav-link active' : 'nav-link' } to="/charts/chart-js"><Trans>Chart Js</Trans></Link></li>
-              </ul>
-            </Collapse>
-          </li>
-          <li className={ this.isPathActive('/user-pages') ? 'nav-item active' : 'nav-item' }>
-            <div className={ this.state.userPagesMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => this.toggleMenuState('userPagesMenuOpen') } data-toggle="collapse">
-              <span className="menu-title"><Trans>User Pages</Trans></span>
-              <i className="menu-arrow"></i>
-              <i className="mdi mdi-lock menu-icon"></i>
-            </div>
-            <Collapse in={ this.state.userPagesMenuOpen }>
-              <ul className="nav flex-column sub-menu">
-                <li className="nav-item"> <Link className={ this.isPathActive('/user-pages/login-1') ? 'nav-link active' : 'nav-link' } to="/user-pages/login-1"><Trans>Login</Trans></Link></li>
-                <li className="nav-item"> <Link className={ this.isPathActive('/user-pages/register-1') ? 'nav-link active' : 'nav-link' } to="/user-pages/register-1"><Trans>Register</Trans></Link></li>
-                <li className="nav-item"> <Link className={ this.isPathActive('/user-pages/lockscreen') ? 'nav-link active' : 'nav-link' } to="/user-pages/lockscreen"><Trans>Lockscreen</Trans></Link></li>
-              </ul>
-            </Collapse>
-          </li>
-          <li className={ this.isPathActive('/error-pages') ? 'nav-item active' : 'nav-item' }>
-            <div className={ this.state.errorPagesMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => this.toggleMenuState('errorPagesMenuOpen') } data-toggle="collapse">
-              <span className="menu-title"><Trans>Error Pages</Trans></span>
-              <i className="menu-arrow"></i>
-              <i className="mdi mdi-security menu-icon"></i>
-            </div>
-            <Collapse in={ this.state.errorPagesMenuOpen }>
-              <ul className="nav flex-column sub-menu">
-                <li className="nav-item"> <Link className={ this.isPathActive('/error-pages/error-404') ? 'nav-link active' : 'nav-link' } to="/error-pages/error-404">404</Link></li>
-                <li className="nav-item"> <Link className={ this.isPathActive('/error-pages/error-500') ? 'nav-link active' : 'nav-link' } to="/error-pages/error-500">500</Link></li>
-              </ul>
-            </Collapse>
-          </li>
-          <li className={ this.isPathActive('/general-pages') ? 'nav-item active' : 'nav-item' }>
-            <div className={ this.state.generalPagesMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => this.toggleMenuState('generalPagesMenuOpen') } data-toggle="collapse">
-              <span className="menu-title"><Trans>General Pages</Trans></span>
-              <i className="menu-arrow"></i>
-              <i className="mdi mdi-medical-bag menu-icon"></i>
-            </div>
-            <Collapse in={ this.state.generalPagesMenuOpen }>
-              <ul className="nav flex-column sub-menu">
-                <li className="nav-item"> <Link className={ this.isPathActive('/general-pages/blank-page') ? 'nav-link active' : 'nav-link' } to="/general-pages/blank-page"><Trans>Blank Page</Trans></Link></li>
-              </ul>
-            </Collapse>
-          </li>
-          <li className="nav-item">
-            <a className="nav-link" href="http://bootstrapdash.com/demo/purple-react-free/documentation/documentation.html" rel="noopener noreferrer" target="_blank">
-              <span className="menu-title"><Trans>Documentation</Trans></span>
-              <i className="mdi mdi-file-document-box menu-icon"></i>
-            </a>
           </li>
         </ul>
       </nav>

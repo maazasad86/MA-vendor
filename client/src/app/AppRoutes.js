@@ -36,6 +36,8 @@ const RawMaterial = lazy(() => import('./bikes/RawMaterial'));
 const RawMaterialInventory = lazy(() => import('./bikes/RawMaterialInventory'));
 const Assemble = lazy(() => import('./bikes/Assemble'));
 const AssembleHistory = lazy(() => import('./bikes/AssembleHistory'));
+const POS = lazy(() => import('./pos/POS'));
+const SalesHistory = lazy(() => import('./pos/SalesHistory'));
 
 class AppRoutes extends Component {
   render () {
@@ -49,6 +51,8 @@ class AppRoutes extends Component {
           <Route path="/bikes/raw-material-inventory" component={ RawMaterialInventory } />
           <Route path="/bikes/assemble" component={ Assemble } />
           <Route path="/bikes/assemble-history" component={ AssembleHistory } />
+          <Route path="/pos" component={ POS } />
+          <Route path="/sales-history" component={ SalesHistory } />
 
 
           <Route path="/basic-ui/buttons" component={ Buttons } />

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Button, Table, Card, Row, Col, Modal } from 'react-bootstrap';
+import { Form, Button, Table, Card, Row, Col, Modal, Alert } from 'react-bootstrap';
 
 const BikeCategory = () => {
   const [bikes, setBikes] = useState([]);
@@ -7,13 +7,18 @@ const BikeCategory = () => {
   const [image, setImage] = useState(null);
   const [editId, setEditId] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [message, setMessage] = useState({ type: '', text: '' });
 
   // Fetch all bikes
   const fetchBikes = async () => {
     try {
       const res = await fetch('/api/bikes');
       const data = await res.json();
-      setBikes(data);
+      if (Array.isArray(data)) {
+          setBikes(data);
+      } else {
+          setBikes([]);
+      }
     } catch (err) {
       console.error('Error fetching bikes:', err);
     }
@@ -55,17 +60,26 @@ const BikeCategory = () => {
     }
   };
 
-  // Handle delete
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this bike?')) {
-      try {
-        const res = await fetch(`/api/bikes/${id}`, { method: 'DELETE' });
-        if (res.ok) fetchBikes();
-      } catch (err) {
-        console.error('Error deleting bike:', err);
+    // Handle delete
+    const handleDelete = async (id) => {
+      console.log('Initiating delete for bike ID:', id);
+      if (window.confirm('Are you sure you want to delete this bike?')) {
+        try {
+          const res = await fetch(`/api/bikes/${id}`, { method: 'DELETE' });
+          if (res.ok) {
+            setMessage({ type: 'success', text: 'Bike deleted successfully!' });
+            fetchBikes();
+            setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+          } else {
+            const data = await res.json();
+            setMessage({ type: 'danger', text: 'Delete failed: ' + (data.error || 'Server error') });
+          }
+        } catch (err) {
+          console.error('Error deleting bike:', err);
+          setMessage({ type: 'danger', text: 'Network error while deleting.' });
+        }
       }
-    }
-  };
+    };
 
   // Handle edit
   const handleEdit = (bike) => {
@@ -82,6 +96,12 @@ const BikeCategory = () => {
           Add New Bike
         </Button>
       </div>
+
+      {message.text && (
+        <Alert variant={message.type} className="mb-4" dismissible onClose={() => setMessage({type:'', text:''})}>
+          {message.text}
+        </Alert>
+      )}
 
       <Row>
         <Col lg={12} className="grid-margin stretch-card">
@@ -112,7 +132,14 @@ const BikeCategory = () => {
                           <Button variant="info" size="sm" className="mr-2" onClick={() => handleEdit(bike)}>
                             Edit
                           </Button>
-                          <Button variant="danger" size="sm" onClick={() => handleDelete(bike._id)}>
+                          <Button 
+                            variant="danger" 
+                            size="sm" 
+                            onClick={(e) => {
+                                console.log('Delete clicked for ID:', bike._id);
+                                handleDelete(bike._id);
+                            }}
+                          >
                             Delete
                           </Button>
                         </td>
